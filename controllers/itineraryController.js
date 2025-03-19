@@ -1,5 +1,6 @@
 import Itinerary from "../models/Itinerary.js";
 import fetchTouristPlaces from "../services/groqServices.js";
+import getCoordinates from "../services/getCoordinates.js";
 
 export const generateItinerary = async (req, res) => {
   try {
@@ -22,9 +23,6 @@ export const generateItinerary = async (req, res) => {
       .replace(/\n/g, "") // Remove newlines
       .trim();
 
-    // Regex to extract each place entry from `{...}`
-    // const placeRegex = /{([^{}]+)}/g;
-    // let match;
     let extractedPlaces = [];
 
     try {
@@ -38,14 +36,19 @@ export const generateItinerary = async (req, res) => {
     const validPlaces = [];
     for (const place of extractedPlaces) {
       if (place.name && place.visitTime && place.description) {
-        // Uncomment if you want to fetch coordinates (assuming getCoordinates function exists)
-        // const { latitude, longitude } = await getCoordinates(place.name);
-        // console.log(latitude);
+        const coordinates = await getCoordinates(place.name);
+        console.log(`${place.name} has ${coordinates.latitude}`);
+        if (!coordinates) {
+          console.warn(`Skipping ${place.name} due to missing coordinates`);
+          continue;
+        }
 
         validPlaces.push({
           name: place.name,
           visitTime: parseInt(place.visitTime, 10),
           description: place.description,
+          latitude: coordinates.latitude, // Add latitude
+          longitude: coordinates.longitude, // Add longitude
         });
       } else {
         console.warn("Skipping invalid place:", place);
@@ -67,7 +70,7 @@ export const generateItinerary = async (req, res) => {
       location,
       placeType,
       timeAvailable,
-      places: uniquePlaces,
+      places: validPlaces,
     });
 
     await itinerary.save();

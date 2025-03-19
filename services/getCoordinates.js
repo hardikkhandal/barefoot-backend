@@ -3,7 +3,8 @@
 import axios from "axios";
 
 // Function to get coordinates for a given place name
-export async function getCoordinates(placeName) {
+export default async function getCoordinates(placeName) {
+  console.log(placeName);
   const apiKey = "AIzaSyDoUTRvQfrchjjKiMhEPGH7r3eMukndUeA"; // Replace with your actual API key
   const encodedPlaceName = encodeURIComponent(placeName);
   const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodedPlaceName}&key=${apiKey}`;
