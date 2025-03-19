@@ -1,6 +1,7 @@
 import Itinerary from "../models/Itinerary.js";
 import fetchTouristPlaces from "../services/groqServices.js";
 import getCoordinates from "../services/getCoordinates.js";
+import { planOptimalItinerary } from "../services/calculateOptimalRoute.js";
 
 export const generateItinerary = async (req, res) => {
   try {
@@ -37,11 +38,7 @@ export const generateItinerary = async (req, res) => {
     for (const place of extractedPlaces) {
       if (place.name && place.visitTime && place.description) {
         const coordinates = await getCoordinates(place.name);
-        console.log(`${place.name} has ${coordinates.latitude}`);
-        if (!coordinates) {
-          console.warn(`Skipping ${place.name} due to missing coordinates`);
-          continue;
-        }
+        if (!coordinates) continue; // Skip places without coordinates
 
         validPlaces.push({
           name: place.name,
@@ -50,18 +47,6 @@ export const generateItinerary = async (req, res) => {
           latitude: coordinates.latitude, // Add latitude
           longitude: coordinates.longitude, // Add longitude
         });
-      } else {
-        console.warn("Skipping invalid place:", place);
-      }
-    }
-
-    // Remove duplicate places based on 'name'
-    const uniquePlaces = [];
-    const placeSet = new Set();
-    for (const place of extractedPlaces) {
-      if (!placeSet.has(place.name)) {
-        placeSet.add(place.name);
-        uniquePlaces.push(place);
       }
     }
 
@@ -74,7 +59,10 @@ export const generateItinerary = async (req, res) => {
     });
 
     await itinerary.save();
-    res.json(itinerary);
+    console.log("Itinery saved in db");
+
+    const optimizedItinerary = planOptimalItinerary(validPlaces, timeAvailable);
+    res.json({ itinerary: optimizedItinerary });
   } catch (error) {
     res.status(500).json({ error: "Failed to generate itinerary" });
   }
