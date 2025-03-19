@@ -1,29 +1,26 @@
+// geocode.js
+
 import axios from "axios";
 
-const GOOGLE_MAPS_API_KEY = "YOUR_GOOGLE_API_KEY"; // Add your API key here
+// Function to get coordinates for a given place name
+export async function getCoordinates(placeName) {
+  const apiKey = "AIzaSyDoUTRvQfrchjjKiMhEPGH7r3eMukndUeA"; // Replace with your actual API key
+  const encodedPlaceName = encodeURIComponent(placeName);
+  const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodedPlaceName}&key=${apiKey}`;
 
-const getCoordinates = async (placeName) => {
   try {
-    const response = await axios.get(
-      `https://maps.googleapis.com/maps/api/geocode/json`,
-      {
-        params: {
-          address: placeName,
-          key: GOOGLE_MAPS_API_KEY,
-        },
-      }
-    );
+    const response = await axios.get(url);
+    const { data } = response;
 
-    const { results } = response.data;
-    if (results.length > 0) {
-      const { lat, lng } = results[0].geometry.location;
+    if (data.status === "OK" && data.results.length > 0) {
+      const { lat, lng } = data.results[0].geometry.location;
       return { latitude: lat, longitude: lng };
+    } else {
+      console.error("Geocoding API error:", data.status, data.error_message);
+      return null;
     }
-    return { latitude: null, longitude: null };
   } catch (error) {
-    console.error("Error fetching coordinates:", error);
-    return { latitude: null, longitude: null };
+    console.error("Error fetching geocoding data:", error.message);
+    return null;
   }
-};
-
-export default getCoordinates;
+}

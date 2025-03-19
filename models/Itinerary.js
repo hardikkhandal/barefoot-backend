@@ -9,8 +9,6 @@ const ItinerarySchema = new mongoose.Schema({
       name: String,
       visitTime: Number,
       description: String,
-      latitude: Number, // Added for route optimization
-      longitude: Number,
     },
   ],
   createdAt: { type: Date, default: Date.now },

@@ -23,30 +23,32 @@ export const generateItinerary = async (req, res) => {
       .trim();
 
     // Regex to extract each place entry from `{...}`
-    const placeRegex = /{([^{}]+)}/g;
-    let match;
-    const extractedPlaces = [];
+    // const placeRegex = /{([^{}]+)}/g;
+    // let match;
+    let extractedPlaces = [];
 
-    while ((match = placeRegex.exec(cleanedResponse)) !== null) {
-      let placeEntry = `{${match[1]}}`; // Add curly braces back
+    try {
+      extractedPlaces = JSON.parse(cleanedResponse);
+    } catch (err) {
+      console.error("Failed to parse JSON:", err);
+      return res.status(500).json({ error: "Invalid JSON format in response" });
+    }
 
-      try {
-        let placeObj = JSON.parse(placeEntry); // Parse each object separately
+    // Validate the extracted places
+    const validPlaces = [];
+    for (const place of extractedPlaces) {
+      if (place.name && place.visitTime && place.description) {
+        // Uncomment if you want to fetch coordinates (assuming getCoordinates function exists)
+        // const { latitude, longitude } = await getCoordinates(place.name);
+        // console.log(latitude);
 
-        // Validate structure before adding
-        if (placeObj.name && placeObj.visitTime && placeObj.description) {
-          const { latitude, longitude } = await getCoordinates(placeObj.name);
-
-          extractedPlaces.push({
-            name: placeObj.name,
-            visitTime: parseInt(placeObj.visitTime, 10),
-            description: placeObj.description,
-            latitude,
-            longitude,
-          });
-        }
-      } catch (err) {
-        console.error("Skipping invalid entry:", placeEntry);
+        validPlaces.push({
+          name: place.name,
+          visitTime: parseInt(place.visitTime, 10),
+          description: place.description,
+        });
+      } else {
+        console.warn("Skipping invalid place:", place);
       }
     }
 
