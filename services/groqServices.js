@@ -10,7 +10,7 @@ export const fetchTouristPlaces = async (
   timeAvailable
 ) => {
   try {
-    const prompt = `Provide a JSON array with top tourist attractions in ${location} for ${placeType} visitors. 
+    const prompt = `Provide ONLY a valid JSON array (without any explanations or extra text) listing in ${location} for ${placeType} visitors. 
     Each item should have:
     - "name": The place name
     - "visitTime": Average time to visit in hours (rounded to a single number)
