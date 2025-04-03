@@ -1,7 +1,7 @@
 import Groq from "groq-sdk";
 
 const groq = new Groq({
-  apiKey: "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",
+  apiKey: process.env.GROQ_API_KEY,
 });
 
 export const fetchTouristPlaces = async (
