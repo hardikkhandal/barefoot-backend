@@ -6,9 +6,10 @@ import itineraryRoutes from "./routes/itineraryRoutes.js";
 
 dotenv.config();
 const app = express();
+
 app.use(express.json());
 // app.use(cors());
-app.use(cors({ origin: "http://localhost:3000" }));
+app.use(cors({ origin: "https://barefoot-backend-1.onrender.com" }));
 connectDB();
 
 app.get("/", (req, res) => {
